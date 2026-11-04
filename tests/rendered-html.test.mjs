@@ -12,16 +12,15 @@ test("ships the installable Professor Conte application",async()=>{
     readFile(new URL("public/service-worker.js",root),"utf8"),
   ]);
   assert.match(html,/Prof\. Conte's Course Assistant/);
-  assert.match(html,/Ask on WhatsApp/);
-  assert.match(html,/WhatsApp Prof\. Conte/);
-  assert.match(html,/name="sendWhatsApp"[^>]*checked/);
-  assert.match(script,/Email: \$\{data\.studentEmail/);
-  assert.match(script,/wa\.me\/\$\{digits\}/);
-  assert.match(script,/Direct contact active/);
+  assert.match(html,/Send inside the app/);
+  assert.match(html,/Message Prof\. Conte/);
+  assert.doesNotMatch(html,/name="sendWhatsApp"/);
+  assert.doesNotMatch(script,/window\.open\('about:blank'/);
+  assert.match(script,/In-app messaging active/);
   assert.match(html,/manifest\.webmanifest/);
   assert.equal(manifest.display,"standalone");
   assert.ok(manifest.icons.some(icon=>icon.sizes==="512x512"));
-  assert.match(worker,/conte-assistant-v2/);
+  assert.match(worker,/conte-assistant-v3/);
 });
 
 test("cloud API preserves persistence and approval controls",async()=>{
