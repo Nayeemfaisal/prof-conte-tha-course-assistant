@@ -2,7 +2,7 @@ const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const api=async(path,options={})=>{const r=await fetch(path,{headers:{'content-type':'application/json',...(options.headers||{})},...options});const data=await r.json();if(!r.ok)throw new Error(data.error||'Request failed');return data};
 const esc=(s='')=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let questions=[],selected=null,currentFilter='all';
+let questions=[],selected=null,currentFilter='all',publicConfig=null;
 
 function show(id){
   $$('.view,.nav').forEach(x=>x.classList.remove('active'));
@@ -16,7 +16,34 @@ function show(id){
 $$('.nav,.view-link').forEach(b=>b.onclick=()=>show(b.dataset.view));
 
 $('textarea[name="body"]').oninput=e=>$('#counter').textContent=e.target.value.length;
-$('#question-form').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target),data=Object.fromEntries(f);data.anonymous=f.has('anonymous');const m=$('#form-message');m.style.color='';try{const r=await api('/api/questions',{method:'POST',body:JSON.stringify(data)});m.textContent=`✓ ${r.message} Reference #${r.id}`;e.target.reset();$('#counter').textContent='0'}catch(err){m.textContent=err.message;m.style.color='#b24132'}};
+$('#question-form').onsubmit=async e=>{
+  e.preventDefault();
+  const form=e.target,f=new FormData(form),data=Object.fromEntries(f),openWhatsApp=f.has('sendWhatsApp');
+  data.anonymous=f.has('anonymous');
+  delete data.sendWhatsApp;
+  const m=$('#form-message'),direct=$('#send-submission-whatsapp');
+  m.style.color='';direct.hidden=true;
+  const whatsappWindow=openWhatsApp&&publicConfig?.whatsappNumber?window.open('about:blank','_blank'):null;
+  try{
+    const r=await api('/api/questions',{method:'POST',body:JSON.stringify(data)});
+    const digits=String(publicConfig?.whatsappNumber||'').replace(/\D/g,'');
+    const message=[
+      'Hello Prof. Dr. Conte,',
+      `I submitted question #${r.id} through your Course Assistant.`,
+      '',
+      `Name: ${data.studentName||'Not provided'}`,
+      `Email: ${data.studentEmail||'Not provided'}`,
+      `Topic: ${data.category}`,
+      `Title: ${data.title}`,
+      `Question: ${data.body}`
+    ].join('\n');
+    const whatsappUrl=digits?`https://wa.me/${digits}?text=${encodeURIComponent(message)}`:'';
+    m.textContent=`✓ ${r.message} Reference #${r.id}`;
+    if(whatsappUrl){direct.href=whatsappUrl;direct.hidden=false}
+    form.reset();form.elements.sendWhatsApp.checked=true;$('#counter').textContent='0';
+    if(whatsappWindow&&whatsappUrl)whatsappWindow.location.href=whatsappUrl;else whatsappWindow?.close();
+  }catch(err){whatsappWindow?.close();m.textContent=err.message;m.style.color='#b24132'}
+};
 
 async function loadFaq(){const list=$('#faq-list');try{const rows=await api('/api/faqs');list.dataset.rows=JSON.stringify(rows);renderFaq(rows)}catch{list.innerHTML='<div class="empty">Answers could not be loaded.</div>'}}
 function renderFaq(rows){$('#faq-list').innerHTML=rows.length?rows.map(x=>`<article class="faq"><div class="meta"><span class="badge">✓ Professor approved</span><span>${esc(x.category)}</span></div><h3>${esc(x.title)}</h3><p>${esc(x.body)}</p><div class="answer">${esc(x.final_text)}</div></article>`).join(''):'<div class="empty">No published answers yet. Ask the first question!</div>'}
@@ -57,7 +84,7 @@ async function loadAudit(){try{const rows=await api('/api/audit');$('#audit-list
 const auditLabel=e=>({login:'Professor signed in',question_created:'Question received',answer_published:'Answer published',answer_published_whatsapp:'Answer sent on WhatsApp',question_archived:'Question archived',demo_seeded:'Demo questions loaded'}[e]||e.replaceAll('_',' '));
 $('#audit-refresh').onclick=loadAudit;
 
-async function loadPublicConfig(){try{const c=await api('/api/public-config');if(!c.whatsappUrl)return;for(const id of ['student-whatsapp','workflow-whatsapp']){const link=$(`#${id}`);link.href=c.whatsappUrl;link.hidden=false}}catch{}}
+async function loadPublicConfig(){try{const c=await api('/api/public-config');publicConfig=c;if(!c.whatsappUrl)return;for(const id of ['student-whatsapp','workflow-whatsapp','whatsapp-float']){const link=$(`#${id}`);link.href=c.whatsappUrl;link.hidden=false}}catch{}}
 loadPublicConfig();
 
 let installPrompt=null;

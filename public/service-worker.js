@@ -1,4 +1,4 @@
-const CACHE='conte-assistant-v1';
+const CACHE='conte-assistant-v2';
 const SHELL=['/','/index.html','/styles.css','/app.js','/manifest.webmanifest','/professor.jpg','/icon-192.png','/icon-512.png'];
 
 self.addEventListener('install',event=>{
