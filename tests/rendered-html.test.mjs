@@ -12,11 +12,11 @@ test("ships the installable Professor Conte application",async()=>{
     readFile(new URL("public/service-worker.js",root),"utf8"),
   ]);
   assert.match(html,/Prof\. Conte's Course Assistant/);
-  assert.match(html,/Send inside the app/);
-  assert.match(html,/Message Prof\. Conte/);
+  assert.match(html,/Website → WhatsApp → email/);
+  assert.match(html,/Write to Prof\. Dr\. Conte/);
   assert.doesNotMatch(html,/name="sendWhatsApp"/);
   assert.doesNotMatch(script,/window\.open\('about:blank'/);
-  assert.match(script,/In-app messaging active/);
+  assert.match(script,/Meta WhatsApp Cloud API connected/);
   assert.match(html,/manifest\.webmanifest/);
   assert.equal(manifest.display,"standalone");
   assert.ok(manifest.icons.some(icon=>icon.sizes==="512x512"));
@@ -28,5 +28,7 @@ test("cloud API preserves persistence and approval controls",async()=>{
   assert.match(api,/CREATE TABLE IF NOT EXISTS questions/);
   assert.match(api,/Professor login required/);
   assert.match(api,/answer_published_whatsapp/);
-  assert.match(api,/Invalid OpenWA webhook signature/);
+  assert.match(api,/Invalid Meta webhook signature/);
+  assert.match(api,/\/api\/webhooks\/meta/);
+  assert.match(api,/professor_reply_emailed/);
 });
