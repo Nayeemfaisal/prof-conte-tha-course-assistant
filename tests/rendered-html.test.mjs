@@ -17,6 +17,7 @@ test("ships the installable Professor Conte application",async()=>{
   assert.match(html,/name="sendWhatsApp"[^>]*checked/);
   assert.match(script,/Email: \$\{data\.studentEmail/);
   assert.match(script,/wa\.me\/\$\{digits\}/);
+  assert.match(script,/Direct contact active/);
   assert.match(html,/manifest\.webmanifest/);
   assert.equal(manifest.display,"standalone");
   assert.ok(manifest.icons.some(icon=>icon.sizes==="512x512"));
