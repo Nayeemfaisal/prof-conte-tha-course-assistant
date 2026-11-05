@@ -12,7 +12,7 @@ test("ships the installable Professor Conte application",async()=>{
     readFile(new URL("public/service-worker.js",root),"utf8"),
   ]);
   assert.match(html,/Prof\. Conte's Course Assistant/);
-  assert.match(html,/Professor-controlled course communication/);
+  assert.match(html,/Course communication · Faculty of MV/);
   assert.match(html,/theme-color" content="#ff0350"/);
   assert.match(html,/Write to Prof\. Dr\. Conte/);
   assert.doesNotMatch(html,/name="sendWhatsApp"/);
