@@ -32,4 +32,6 @@ test("cloud API preserves persistence and approval controls",async()=>{
   assert.match(api,/Invalid Meta webhook signature/);
   assert.match(api,/\/api\/webhooks\/meta/);
   assert.match(api,/professor_reply_emailed/);
+  assert.match(api,/hub\.nhr\.fau\.de\/api\/llmgw\/v1/);
+  assert.match(api,/Local evidence fallback/);
 });
